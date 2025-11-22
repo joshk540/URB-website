@@ -1,0 +1,1516 @@
+
+// Theme handling
+function applyTheme() {
+  const s = localStorage.getItem('urbTheme');
+  if (s) {
+    document.documentElement.dataset.theme = s;
+  }
+}
+
+function toggleTheme() {
+  const current = document.documentElement.dataset.theme === 'dark' ? '' : 'dark';
+  document.documentElement.dataset.theme = current;
+  localStorage.setItem('urbTheme', current);
+}
+
+// Auth + subscription flow (prototype only)
+function doSignup() {
+  const emailEl = document.getElementById('se');
+  const passEl = document.getElementById('sp');
+  if (!emailEl || !passEl) return;
+
+  const email = emailEl.value.trim();
+  const pass = passEl.value.trim();
+  if (!email || !pass) {
+    alert('Please enter an email and password to continue.');
+    return;
+  }
+
+  localStorage.setItem('urbEmail', email);
+  localStorage.setItem('urbPass', pass);
+  // Reset paid state until payment step is completed
+  localStorage.removeItem('urbPaid');
+  location.href = 'pay.html';
+}
+
+function doLogin() {
+  const emailInput = document.getElementById('le');
+  const passInput = document.getElementById('lp');
+  if (!emailInput || !passInput) return;
+
+  const email = emailInput.value.trim();
+  const pass = passInput.value.trim();
+  const storedEmail = localStorage.getItem('urbEmail');
+  const storedPass = localStorage.getItem('urbPass');
+
+  if (email === storedEmail && pass === storedPass) {
+    const isPaid = localStorage.getItem('urbPaid') === 'true';
+    location.href = isPaid ? 'hub.html' : 'subs.html';
+  } else {
+    alert('Invalid login – this prototype only recognises the account you created on sign up.');
+  }
+}
+
+function doPay() {
+  // Prototype: no real card processing
+  localStorage.setItem('urbPaid', 'true');
+  location.href = 'hub.html';
+}
+
+function logout() {
+  // Clear only auth / membership keys so student can re-run the flow
+  localStorage.removeItem('urbEmail');
+  localStorage.removeItem('urbPass');
+  localStorage.removeItem('urbPaid');
+  location.href = 'login.html';
+}
+
+// Gatekeeping for Wellness Hub
+function guardHub() {
+  const path = location.pathname || '';
+  if (path.endsWith('hub.html')) {
+    const hasAccount = !!localStorage.getItem('urbEmail');
+    const isPaid = localStorage.getItem('urbPaid') === 'true';
+    if (!hasAccount || !isPaid) {
+      location.href = 'paywall.html';
+    }
+  }
+}
+
+// Wellness Hub helpers
+function initHub() {
+  // Soundscape: remember last choice
+  const sndSelect = document.getElementById('sndSelect');
+  const sndAudio = document.getElementById('snd');
+  if (sndSelect && sndAudio) {
+    const last = localStorage.getItem('urbSoundscape');
+    if (last) {
+      sndSelect.value = last;
+      sndAudio.src = last;
+    }
+    sndSelect.addEventListener('change', function () {
+      localStorage.setItem('urbSoundscape', this.value || '');
+    });
+  }
+
+  // Journal autosave
+  const journal = document.getElementById('journal');
+  if (journal) {
+    const saved = localStorage.getItem('urbJournal');
+    if (saved) {
+      journal.value = saved;
+    }
+    journal.addEventListener('input', function () {
+      localStorage.setItem('urbJournal', this.value);
+    });
+  }
+
+  // Mood check-in
+  const moodButtons = document.querySelectorAll('[data-mood]');
+  const moodMsg = document.getElementById('moodMessage');
+  const savedMood = localStorage.getItem('urbMood');
+  if (moodButtons.length) {
+    function updateMoodUI(mood) {
+      moodButtons.forEach(btn => {
+        if (btn.dataset.mood === mood) {
+          btn.classList.add('btn');
+          btn.classList.remove('btn-outline');
+        } else {
+          btn.classList.remove('btn');
+          btn.classList.add('btn-outline');
+        }
+      });
+      if (moodMsg) {
+        let text = '';
+        if (mood === 'calm') text = 'Great – maybe lock this feeling in with a short gratitude note below.';
+        if (mood === 'stressed') text = 'Totally valid. Try a 60-second breath and a quick re-prioritise before diving back in.';
+        if (mood === 'tired') text = 'Your brain is flagging. A short break, water and a stretch may help more than another tab.';
+        if (mood === 'overwhelmed') text = 'You don’t have to fix everything at once. Pick one tiny next step, then rest.';
+        moodMsg.textContent = text;
+      }
+    }
+
+    moodButtons.forEach(btn => {
+      btn.addEventListener('click', function (e) {
+        e.preventDefault();
+        const mood = this.dataset.mood;
+        localStorage.setItem('urbMood', mood);
+        updateMoodUI(mood);
+      });
+    });
+
+    if (savedMood) {
+      updateMoodUI(savedMood);
+    }
+  }
+}
+
+// Global initialisation
+document.addEventListener('DOMContentLoaded', function () {
+  applyTheme();
+  guardHub();
+
+  const path = location.pathname || '';
+  if (path.endsWith('hub.html')) {
+    initHub();
+  }
+});
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Wellness Hub | URB – Members Area</title>
+  <meta name="description" content="Members-only Wellness Hub with soundscapes, guided breathing, mood check-ins and simple student-friendly rituals." />
+  <link rel="stylesheet" href="style.css" />
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <div class="clouds"></div>
+  <div class="clouds c2"></div>
+
+  <header>
+    <nav>
+      <div class="nav-left">
+        <img src="assets/urb_logo.svg" class="logo" alt="URB logo" />
+        <a href="index.html">Home</a>
+        <a href="what.html">What we do</a>
+        <a href="subs.html">Subscriptions</a>
+        <a href="hub.html" class="active">Wellness hub</a>
+      </div>
+      <div class="nav-right">
+        <a href="login.html" onclick="logout(); return false;">Logout</a>
+        <button class="btn-ghost" type="button" onclick="toggleTheme()">🌓 Theme</button>
+      </div>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <div class="hub-grid">
+        <div>
+          <p class="kicker">Members area</p>
+          <h1 class="h1">Welcome to your Wellness Hub.</h1>
+          <p class="p">
+            This space is only available to active URB members. Use it for short, realistic check-ins – the kind you
+            can actually fit between lectures, shifts and revision.
+          </p>
+
+          <div class="resource-card">
+            <span class="resource-tag">🎧 Soundscapes</span>
+            <h3>Choose your background</h3>
+            <p class="p">Pick a soundscape that matches your current mood or study style. Your last choice is remembered on this device.</p>
+            <select id="sndSelect" style="margin:6px 0 8px;">
+              <option value="">Select a soundscape…</option>
+              <option value="https://cdn.pixabay.com/download/audio/2022/03/10/audio_aea5f4a674.mp3?filename=soft-piano-ambient-141992.mp3">
+                Soft piano focus
+              </option>
+              <option value="https://cdn.pixabay.com/download/audio/2021/09/01/audio_125b1cf03a.mp3?filename=meditation-ambient-138050.mp3">
+                Gentle meditation
+              </option>
+              <option value="https://cdn.pixabay.com/download/audio/2022/07/25/audio_eca8ba07f3.mp3?filename=forest-birds-ambient-nature-114353.mp3">
+                Forest & birds
+              </option>
+              <option value="https://cdn.pixabay.com/download/audio/2022/03/15/audio_8864fead5b.mp3?filename=coffee-shop-ambience-ambient-music-139386.mp3">
+                Calm coffee shop
+              </option>
+            </select>
+            <audio id="snd" controls loop style="width:100%;"></audio>
+          </div>
+
+          <div class="resource-card">
+            <span class="resource-tag">🫁 Breathing</span>
+            <h3>60-second reset</h3>
+            <p class="p">
+              Follow the expanding circle – breathe in as it grows, hold for a moment, then breathe out as it shrinks.
+              Repeat for 5–8 breaths.
+            </p>
+            <div class="breath"></div>
+            <p class="p" style="text-align:center;">Inhale… hold… exhale…</p>
+          </div>
+        </div>
+
+        <div>
+          <div class="resource-card">
+            <span class="resource-tag">🙂 Mood check-in</span>
+            <h3>How are you arriving today?</h3>
+            <p class="p">Click the option that feels closest. This doesn’t have to be exact – it’s just a quick check-in.</p>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 10px;">
+              <button class="btn btn-outline" data-mood="calm">Calm</button>
+              <button class="btn btn-outline" data-mood="stressed">Stressed</button>
+              <button class="btn btn-outline" data-mood="tired">Tired</button>
+              <button class="btn btn-outline" data-mood="overwhelmed">Overwhelmed</button>
+            </div>
+            <p id="moodMessage" class="p"></p>
+          </div>
+
+          <div class="resource-card">
+            <span class="resource-tag">📝 Micro-journal</span>
+            <h3>Two-minute journalling space</h3>
+            <p class="p">
+              Use this box for quick notes – a win from today, something on your mind, or one thing you’re grateful for.
+              It automatically saves in this browser only.
+            </p>
+            <textarea id="journal" placeholder="Type a few lines here – it doesn’t need to be perfect."></textarea>
+            <p class="helper">Saved locally in this browser so you can come back to it later.</p>
+          </div>
+
+          <div class="resource-card">
+            <span class="resource-tag">🌅 Study-friendly routines</span>
+            <h3>Suggested weekly check-ins</h3>
+            <p class="p">
+              <strong>Monday:</strong> 3-minute breath before your first lecture.<br />
+              <strong>Wednesday:</strong> Tea + soundscape while planning your week.<br />
+              <strong>Friday:</strong> Short journal entry about one thing that went well.<br />
+              <strong>Sunday:</strong> Candle, journal prompt and gentle reset for the week ahead.
+            </p>
+          </div>
+
+          <div class="resource-card">
+            <span class="resource-tag">⚠ Prototype note</span>
+            <h3>Demo only</h3>
+            <p class="p">
+              This Hub is a prototype for coursework. In a live version, additional playlists, guided videos and personalised
+              check-ins would be available here based on your preferences.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+      <span>© URB – Uni Recharge Box</span>
+      <div class="footer-links">
+        <a href="index.html">Home</a>
+        <a href="subs.html">Plans</a>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>URB – Uni Recharge Box | Student Mindfulness & Self-Care</title>
+  <meta name="description" content="URB (Uni Recharge Box) delivers calm in a box – monthly student self-care packages plus a digital mindfulness hub designed for busy uni life." />
+  <link rel="stylesheet" href="style.css" />
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <div class="clouds"></div>
+  <div class="clouds c2"></div>
+
+  <header>
+    <nav>
+      <div class="nav-left">
+        <img src="assets/urb_logo.svg" class="logo" alt="URB logo" />
+        <a href="index.html" class="active">Home</a>
+        <a href="what.html">What we do</a>
+        <a href="subs.html">Subscriptions</a>
+        <a href="hub.html">Wellness hub</a>
+      </div>
+      <div class="nav-right">
+        <a href="login.html">Login</a>
+        <a href="signup.html" class="btn btn-outline">Get started</a>
+        <button class="btn-ghost" type="button" onclick="toggleTheme()">🌓 Theme</button>
+      </div>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <div class="hero-layout">
+        <div>
+          <p class="kicker">For students · By students</p>
+          <h1 class="h1">Your calm corner in the middle of uni chaos.</h1>
+          <p class="p">
+            URB (Uni Recharge Box) combines a monthly self-care box with a digital
+            mindfulness hub — helping you reset, breathe and recharge around real uni deadlines.
+          </p>
+          <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:16px;">
+            <a href="subs.html" class="btn">Browse plans</a>
+            <a href="what.html" class="btn btn-outline">How it works</a>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:18px;align-items:center;">
+            <span class="badge">🕊 100% calm-first, no pressure</span>
+            <span class="badge">⏱ Built for 5-minute study breaks</span>
+          </div>
+        </div>
+        <div class="hero-media">
+          <img
+            src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1400&q=80"
+            alt="Student taking a calm break with candles and a notebook"
+            class="hero"
+          />
+          <div class="hero-pill">
+            ✨ “My favourite 10 minutes of the week.”
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-inline">
+        <div>
+          <h2>Why a mindfulness box for uni?</h2>
+          <p class="p">
+            Uni life is intense. Deadlines, part‑time work, social pressure and sometimes living away from home
+            for the first time. URB is designed to gently interrupt that stress cycle with small, grounding rituals.
+          </p>
+        </div>
+        <div class="card-soft">
+          <div class="stack-sm">
+            <strong>Each box can include:</strong>
+            <ul class="list-clean">
+              <li>Scented candles or wax melts</li>
+              <li>Herbal teas and grounding snacks</li>
+              <li>Mindfulness prompts & reflection cards</li>
+              <li>Access to audio and breathing tools in the Hub</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Designed around the student brain.</h2>
+      <p class="p">
+        URB uses gentle neuromarketing principles — calm colour palettes, short user journeys and positive
+        reinforcement — to make it easier to choose rest, not doom‑scrolling.
+      </p>
+      <div class="grid-3">
+        <div class="card-soft">
+          <h3>🧠 Low‑effort decisions</h3>
+          <p class="p">
+            Clear, simple plans and short forms reduce mental load, so you can subscribe or log in without decision fatigue.
+          </p>
+        </div>
+        <div class="card-soft">
+          <h3>🎧 Calm digital space</h3>
+          <p class="p">
+            Our Wellness Hub offers soundscapes, breathing animations and micro‑rituals perfect for short breaks.
+          </p>
+        </div>
+        <div class="card-soft">
+          <h3>📦 Offline reset</h3>
+          <p class="p">
+            The physical box nudges you away from screens and into tangible, sensory rest — candles, textures, warm drinks.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="grid-2">
+        <div>
+          <h2>How URB works</h2>
+          <ol class="list-clean">
+            <li>Choose the plan that matches your budget and routine.</li>
+            <li>Create your account in under two minutes.</li>
+            <li>Access the digital Hub instantly after payment.</li>
+            <li>Receive your physical box at the start of each month.</li>
+          </ol>
+        </div>
+        <div>
+          <h2>What students are saying</h2>
+          <p class="p">
+            “It’s like a small reminder that I’m allowed to pause. The box arriving each month
+            stops me sleep‑walking through the semester.”
+          </p>
+          <p class="p">
+            “The breathing circle and forest sound really help me reset between study sessions.”
+          </p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+      <span>© URB – Uni Recharge Box</span>
+      <div class="footer-links">
+        <a href="what.html">About URB</a>
+        <a href="subs.html">Plans</a>
+        <a href="#">Privacy & cookies (demo)</a>
+        <a href="login.html">Member login</a>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Login | URB – Uni Recharge Box</title>
+  <meta name="description" content="Log in to URB to access your student Wellness Hub and manage your subscription." />
+  <link rel="stylesheet" href="style.css" />
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <div class="clouds"></div>
+  <div class="clouds c2"></div>
+
+  <header>
+    <nav>
+      <div class="nav-left">
+        <img src="assets/urb_logo.svg" class="logo" alt="URB logo" />
+        <a href="index.html">Home</a>
+        <a href="what.html">What we do</a>
+        <a href="subs.html">Subscriptions</a>
+        <a href="hub.html">Wellness hub</a>
+      </div>
+      <div class="nav-right">
+        <a href="signup.html">Create account</a>
+        <button class="btn-ghost" type="button" onclick="toggleTheme()">🌓 Theme</button>
+      </div>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <p class="kicker">Welcome back</p>
+      <h1 class="h1">Log in to your URB space.</h1>
+      <p class="p">
+        Use the same email and password you used when you created your demo account. This prototype uses your browser’s local storage
+        to simulate a real login.
+      </p>
+
+      <form onsubmit="doLogin(); return false;">
+        <label for="le">Email</label>
+        <input id="le" type="email" placeholder="name@university.ac.uk" required />
+
+        <label for="lp">Password</label>
+        <input id="lp" type="password" placeholder="Password" required />
+
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;margin-bottom:10px;">
+          <span class="helper">Demo only – no real accounts are created.</span>
+        </div>
+
+        <button class="btn" type="submit">Log in</button>
+      </form>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+      <span>© URB – Uni Recharge Box</span>
+      <div class="footer-links">
+        <a href="subs.html">Plans</a>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Payment (Prototype) | URB – Uni Recharge Box</title>
+  <meta name="description" content="Prototype payment step for the URB Uni Recharge Box – no real card processing." />
+  <link rel="stylesheet" href="style.css" />
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <div class="clouds"></div>
+  <div class="clouds c2"></div>
+
+  <header>
+    <nav>
+      <div class="nav-left">
+        <img src="assets/urb_logo.svg" class="logo" alt="URB logo" />
+        <a href="index.html">Home</a>
+        <a href="what.html">What we do</a>
+        <a href="subs.html">Subscriptions</a>
+        <a href="hub.html">Wellness hub</a>
+      </div>
+      <div class="nav-right">
+        <a href="login.html">Login</a>
+        <button class="btn-ghost" type="button" onclick="toggleTheme()">🌓 Theme</button>
+      </div>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <p class="kicker">Step 2 of 2</p>
+      <h1 class="h1">Payment (prototype only).</h1>
+      <p class="p">
+        This page is designed to look and feel like a real checkout screen, but it does not process live payments.
+        Any details you enter will stay in your browser only for the purposes of this demo.
+      </p>
+
+      <form onsubmit="doPay(); return false;">
+        <label for="card">Card number</label>
+        <input id="card" placeholder="1234 5678 9012 3456" />
+
+        <div class="field-row">
+          <div style="flex:1 1 120px;">
+            <label for="exp">Expiry</label>
+            <input id="exp" placeholder="MM/YY" />
+          </div>
+          <div style="flex:1 1 120px;">
+            <label for="cvc">CVC</label>
+            <input id="cvc" placeholder="CVC" />
+          </div>
+        </div>
+
+        <div class="checkbox-row">
+          <input id="tos" type="checkbox" checked />
+          <label for="tos">
+            I understand this is not a real payment and that this website is a coursework prototype only.
+          </label>
+        </div>
+
+        <div style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:12px;">
+          <a href="signup.html" class="btn btn-outline">Back</a>
+          <button class="btn" type="submit">Complete sign‑up</button>
+        </div>
+      </form>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+      <span>© URB – Uni Recharge Box</span>
+      <div class="footer-links">
+        <a href="subs.html">Plans</a>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Access required | URB – Wellness Hub</title>
+  <meta name="description" content="You need an active URB membership to access the Wellness Hub. View plans or log in to continue." />
+  <link rel="stylesheet" href="style.css" />
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <div class="clouds"></div>
+  <div class="clouds c2"></div>
+
+  <header>
+    <nav>
+      <div class="nav-left">
+        <img src="assets/urb_logo.svg" class="logo" alt="URB logo" />
+        <a href="index.html">Home</a>
+        <a href="what.html">What we do</a>
+        <a href="subs.html">Subscriptions</a>
+        <a href="hub.html" class="active">Wellness hub</a>
+      </div>
+      <div class="nav-right">
+        <a href="login.html">Login</a>
+        <button class="btn-ghost" type="button" onclick="toggleTheme()">🌓 Theme</button>
+      </div>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="card" style="text-align:center;">
+      <p class="kicker">Members only</p>
+      <h1 class="h1">You’ll need a membership to enter.</h1>
+      <p class="p">
+        The Wellness Hub is designed as a members‑only calm space. To access breathing tools, soundscapes and rituals,
+        you’ll need an active URB subscription.
+      </p>
+      <div style="display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin-top:10px;">
+        <a class="btn" href="subs.html">View plans</a>
+        <a class="btn btn-outline" href="login.html">Log in to existing account</a>
+      </div>
+      <p class="p" style="margin-top:14px;font-size:0.9rem;">
+        Prototype note: this access step is simulated using local storage in your browser for coursework.
+      </p>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+      <span>© URB – Uni Recharge Box</span>
+      <div class="footer-links">
+        <a href="subs.html">Plans</a>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Create account | URB – Uni Recharge Box</title>
+  <meta name="description" content="Create your URB account to access the Wellness Hub and receive your first student self-care box." />
+  <link rel="stylesheet" href="style.css" />
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <div class="clouds"></div>
+  <div class="clouds c2"></div>
+
+  <header>
+    <nav>
+      <div class="nav-left">
+        <img src="assets/urb_logo.svg" class="logo" alt="URB logo" />
+        <a href="index.html">Home</a>
+        <a href="what.html">What we do</a>
+        <a href="subs.html">Subscriptions</a>
+        <a href="hub.html">Wellness hub</a>
+      </div>
+      <div class="nav-right">
+        <a href="login.html">Login</a>
+        <button class="btn-ghost" type="button" onclick="toggleTheme()">🌓 Theme</button>
+      </div>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <p class="kicker">Step 1 of 2</p>
+      <h1 class="h1">Create your URB account.</h1>
+      <p class="p">
+        This is a prototype site for coursework, so no real data is processed — but the flow has been designed to feel like a real
+        student‑friendly checkout.
+      </p>
+
+      <form onsubmit="doSignup(); return false;">
+        <div class="field-row">
+          <div style="flex:1 1 220px;">
+            <label for="se">University email</label>
+            <input id="se" type="email" placeholder="name@university.ac.uk" required />
+          </div>
+          <div style="flex:1 1 160px;">
+            <label for="sp">Password</label>
+            <input id="sp" type="password" placeholder="Create a secure password" required />
+          </div>
+        </div>
+
+        <label for="address">Term‑time address</label>
+        <textarea id="address" placeholder="Flat, building, campus and postcode"></textarea>
+
+        <div class="field-row">
+          <div style="flex:1 1 120px;">
+            <label for="city">City</label>
+            <input id="city" placeholder="City" />
+          </div>
+          <div style="flex:1 1 120px;">
+            <label for="postcode">Postcode</label>
+            <input id="postcode" placeholder="Postcode" />
+          </div>
+        </div>
+
+        <div class="checkbox-row">
+          <input id="privacy" type="checkbox" checked />
+          <label for="privacy">
+            I understand this is a demo site for a uni project. Any details I enter are stored only in my browser and can be cleared at any time.
+          </label>
+        </div>
+
+        <div style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:10px;">
+          <a class="btn btn-outline" href="subs.html">Back to plans</a>
+          <button class="btn" type="submit">Continue to payment</button>
+        </div>
+      </form>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+      <span>© URB – Uni Recharge Box</span>
+      <div class="footer-links">
+        <a href="subs.html">Plans</a>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
+
+
+:root {
+  --bg1: #bcdce4;
+  --bg2: #cde7d4;
+  --ink: #163039;
+  --muted: #5b7d83;
+  --card: rgba(255, 255, 255, 0.86);
+  --brand: #37b1a1;
+  --brand2: #2a8f82;
+  --accent-soft: #e6f7f3;
+  --round: 18px;
+  --shadow-soft: 0 18px 45px rgba(22, 57, 85, 0.18);
+  --radius-pill: 999px;
+  --border-subtle: 1px solid rgba(18, 70, 76, 0.08);
+}
+
+[data-theme="dark"] {
+  --bg1: #04151b;
+  --bg2: #0d272c;
+  --ink: #e7fbf7;
+  --muted: #8fb9b5;
+  --card: rgba(9, 30, 33, 0.96);
+  --brand: #5dd6c8;
+  --brand2: #3fb9ac;
+  --accent-soft: rgba(61, 199, 176, 0.12);
+  --shadow-soft: 0 22px 60px rgba(0, 0, 0, 0.45);
+  --border-subtle: 1px solid rgba(129, 196, 191, 0.3);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
+  color: var(--ink);
+  background: radial-gradient(circle at top left, var(--bg1), var(--bg2));
+  background-attachment: fixed;
+}
+
+/* Soft animated cloud backdrop */
+.clouds,
+.clouds.c2 {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.5;
+  background-image: url("assets/clouds.svg");
+  background-repeat: repeat-x;
+  background-size: 900px auto;
+  animation: drift 80s linear infinite;
+  mix-blend-mode: soft-light;
+  z-index: 0;
+}
+
+.clouds.c2 {
+  opacity: 0.32;
+  animation-duration: 120s;
+  animation-direction: reverse;
+  filter: blur(1px);
+}
+
+@keyframes drift {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+/* Layout */
+header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  backdrop-filter: blur(18px);
+}
+
+nav {
+  max-width: 1080px;
+  margin: 10px auto 0;
+  padding: 10px 20px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  justify-content: space-between;
+  background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(232,248,244,0.92));
+  box-shadow: 0 14px 40px rgba(18, 70, 76, 0.16);
+  border: var(--border-subtle);
+}
+
+.nav-left,
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.logo {
+  height: 34px;
+}
+
+nav a {
+  text-decoration: none;
+  color: var(--muted);
+  font-size: 0.95rem;
+  padding: 8px 10px;
+  border-radius: 999px;
+  transition: color 0.18s ease, background 0.18s ease, transform 0.12s ease;
+}
+
+nav a:hover {
+  background: rgba(55, 177, 161, 0.08);
+  color: var(--ink);
+  transform: translateY(-1px);
+}
+
+nav a.active {
+  background: var(--accent-soft);
+  color: var(--brand2);
+  font-weight: 600;
+}
+
+.container {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 28px 20px 40px;
+  position: relative;
+  z-index: 1;
+}
+
+main {
+  padding-top: 12px;
+}
+
+/* Cards & surfaces */
+.card {
+  background: var(--card);
+  border-radius: 26px;
+  padding: 24px 22px;
+  margin-bottom: 26px;
+  box-shadow: var(--shadow-soft);
+  border: var(--border-subtle);
+}
+
+.card-soft {
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 24px;
+  padding: 22px;
+  border: 1px dashed rgba(26, 90, 96, 0.18);
+}
+
+.card-inline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+/* Typographic styles */
+.h1 {
+  font-size: clamp(2.1rem, 3vw, 2.6rem);
+  letter-spacing: -0.03em;
+  margin: 0 0 0.4rem;
+}
+
+h2 {
+  font-size: 1.5rem;
+  margin: 0 0 0.25rem;
+}
+
+h3 {
+  margin-top: 0;
+  margin-bottom: 0.4rem;
+}
+
+.p {
+  color: var(--muted);
+  line-height: 1.7;
+  margin-top: 0;
+}
+
+.kicker {
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-size: 0.78rem;
+  color: var(--brand2);
+  font-weight: 600;
+  margin-bottom: 0.45rem;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 11px;
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+/* Hero area */
+.hero-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  gap: 24px;
+  align-items: center;
+}
+
+.hero-media {
+  position: relative;
+}
+
+.hero {
+  width: 100%;
+  border-radius: 28px;
+  display: block;
+  box-shadow: var(--shadow-soft);
+}
+
+.hero-pill {
+  position: absolute;
+  left: 10%;
+  bottom: 10%;
+  padding: 10px 14px;
+  border-radius: 999px;
+  background: rgba(8, 40, 44, 0.92);
+  color: #e9fffa;
+  font-size: 0.82rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: var(--radius-pill);
+  border: none;
+  background: linear-gradient(135deg, var(--brand), var(--brand2));
+  color: #f7fffd;
+  font-size: 0.96rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  box-shadow: 0 10px 30px rgba(7, 91, 84, 0.35);
+  transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease, background 0.16s ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 34px rgba(7, 91, 84, 0.45);
+  filter: brightness(1.03);
+}
+
+.btn-outline {
+  background: rgba(255, 255, 255, 0.85);
+  color: var(--brand2);
+  border: 1px solid rgba(23, 96, 97, 0.26);
+  box-shadow: none;
+}
+
+.btn-outline:hover {
+  background: #ffffff;
+  box-shadow: 0 6px 22px rgba(12, 61, 66, 0.18);
+}
+
+.btn-ghost {
+  background: transparent;
+  border-radius: 999px;
+  padding: 7px 14px;
+  box-shadow: none;
+  border: 1px solid rgba(146, 200, 198, 0.4);
+  color: var(--muted);
+}
+
+/* Grids & layout helpers */
+.grid-3 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.stack-sm {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.list-clean {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0 0;
+}
+
+.list-clean li {
+  padding-left: 0;
+  margin-bottom: 6px;
+  color: var(--muted);
+  font-size: 0.96rem;
+}
+
+.list-clean li::before {
+  content: "• ";
+  color: var(--brand2);
+}
+
+/* Pricing */
+.pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 18px;
+}
+
+.plan {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 24px;
+  padding: 20px 18px 18px;
+  border: var(--border-subtle);
+  box-shadow: 0 10px 30px rgba(28, 85, 86, 0.16);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.plan-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.plan-price {
+  font-size: 1.7rem;
+  font-weight: 700;
+}
+
+.plan-price span {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.plan-tag {
+  font-size: 0.75rem;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--brand2);
+  font-weight: 600;
+}
+
+.plan ul {
+  list-style: none;
+  padding: 0;
+  margin: 4px 0 10px;
+}
+
+.plan li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 0.93rem;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+
+.plan li::before {
+  content: "✓";
+  font-weight: 700;
+  color: var(--brand2);
+  margin-top: 1px;
+}
+
+/* Forms */
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+label {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+input,
+textarea,
+select {
+  width: 100%;
+  padding: 11px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(28, 85, 86, 0.3);
+  font-size: 0.96rem;
+  font-family: inherit;
+  background: rgba(255, 255, 255, 0.94);
+  color: var(--ink);
+  outline: none;
+  transition: border 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: var(--brand2);
+  box-shadow: 0 0 0 1px rgba(55, 177, 161, 0.4);
+  background: #ffffff;
+}
+
+textarea {
+  min-height: 90px;
+  resize: vertical;
+}
+
+.field-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.helper {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.checkbox-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+/* Hub */
+.hub-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: 20px;
+}
+
+.resource-card {
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: 22px;
+  padding: 14px 14px 16px;
+  border: var(--border-subtle);
+  margin-bottom: 10px;
+}
+
+.resource-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgba(57, 171, 155, 0.12);
+  color: var(--brand2);
+}
+
+/* Breathing circle */
+.breath {
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  margin: 12px auto 8px;
+  background: radial-gradient(circle at 30% 10%, #faffff, #7fd2c2);
+  box-shadow: 0 0 0 14px rgba(255, 255, 255, 0.4), 0 18px 45px rgba(0, 0, 0, 0.25);
+  animation: breathe 8s ease-in-out infinite;
+}
+
+@keyframes breathe {
+  0%   { transform: scale(1);   opacity: 0.96; }
+  50%  { transform: scale(1.24); opacity: 1;   }
+  100% { transform: scale(1);   opacity: 0.96; }
+}
+
+/* Footer */
+footer {
+  padding: 26px 20px 34px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.footer-inner {
+  max-width: 1080px;
+  margin: 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  font-size: 0.84rem;
+}
+
+.footer-links a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.footer-links a:hover {
+  text-decoration: underline;
+}
+
+/* Responsive tweaks */
+@media (max-width: 780px) {
+  nav {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .nav-left, .nav-right {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .hero-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .hub-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 520px) {
+  nav {
+    border-radius: 0;
+    margin-top: 0;
+  }
+  .container {
+    padding-inline: 16px;
+  }
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Subscriptions | URB – Uni Recharge Box</title>
+  <meta name="description" content="Choose the URB plan that fits your budget and routine – from full mindfulness boxes to digital-only access." />
+  <link rel="stylesheet" href="style.css" />
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <div class="clouds"></div>
+  <div class="clouds c2"></div>
+
+  <header>
+    <nav>
+      <div class="nav-left">
+        <img src="assets/urb_logo.svg" class="logo" alt="URB logo" />
+        <a href="index.html">Home</a>
+        <a href="what.html">What we do</a>
+        <a href="subs.html" class="active">Subscriptions</a>
+        <a href="hub.html">Wellness hub</a>
+      </div>
+      <div class="nav-right">
+        <a href="login.html">Login</a>
+        <a href="signup.html" class="btn btn-outline">Get started</a>
+        <button class="btn-ghost" type="button" onclick="toggleTheme()">🌓 Theme</button>
+      </div>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <p class="kicker">Plans</p>
+      <h1 class="h1">Pick a plan that feels realistic.</h1>
+      <p class="p">
+        All plans are flexible. You can pause or cancel anytime. Pricing is designed with a student budget in mind,
+        and every option includes access to our digital Wellness Hub.
+      </p>
+    </section>
+
+    <section class="pricing-grid">
+      <article class="plan">
+        <div class="plan-header">
+          <h2>Full Recharge Box</h2>
+          <span class="plan-tag">Most popular</span>
+        </div>
+        <div class="plan-price">£17.99 <span>/ month</span></div>
+        <ul>
+          <li>Monthly self‑care box delivered to your door</li>
+          <li>Curated candles, teas, prompts & surprise items</li>
+          <li>Full access to the digital Wellness Hub</li>
+          <li>Priority early access to new rituals and content</li>
+        </ul>
+        <button class="btn" onclick="location.href='signup.html'">Choose Full Recharge</button>
+      </article>
+
+      <article class="plan">
+        <div class="plan-header">
+          <h2>Digital Only</h2>
+          <span class="plan-tag">Calm on a budget</span>
+        </div>
+        <div class="plan-price">£4.99 <span>/ month</span></div>
+        <ul>
+          <li>Unlimited access to soundscapes & breathing tools</li>
+          <li>Weekly digital prompts & reflection questions</li>
+          <li>New micro‑rituals added during term time</li>
+          <li>Upgrade to a box plan anytime</li>
+        </ul>
+        <button class="btn btn-outline" onclick="location.href='signup.html'">Choose Digital Only</button>
+      </article>
+
+      <article class="plan">
+        <div class="plan-header">
+          <h2>One‑Time Box</h2>
+          <span class="plan-tag">Gift or trial</span>
+        </div>
+        <div class="plan-price">£19.99 <span>one‑off</span></div>
+        <ul>
+          <li>Single curated self‑care box</li>
+          <li>Perfect as a gift or exam‑season treat</li>
+          <li>30‑day complimentary access to the Hub</li>
+          <li>No ongoing commitment</li>
+        </ul>
+        <button class="btn btn-outline" onclick="location.href='signup.html'">Choose One‑Time Box</button>
+      </article>
+    </section>
+
+    <section class="card">
+      <h2>Questions students often ask</h2>
+      <div class="grid-2">
+        <div>
+          <h3>Can I pause my subscription?</h3>
+          <p class="p">Yes. You can pause for a month during holidays or busy exam periods, then restart whenever you're ready.</p>
+          <h3>Is this a real payment system?</h3>
+          <p class="p">For this prototype site, payment is simulated and no real card details are processed.</p>
+        </div>
+        <div>
+          <h3>What if I have allergies?</h3>
+          <p class="p">In a live version, you’d be able to set preferences (for example, “no nuts” or “no fragrance”).</p>
+          <h3>Do I need all the extras?</h3>
+          <p class="p">Not at all — even a 5‑minute breathing break can be enough. URB simply makes that easier to remember.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+      <span>© URB – Uni Recharge Box</span>
+      <div class="footer-links">
+        <a href="what.html">About URB</a>
+        <a href="#">Privacy & cookies (demo)</a>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>What we do | URB – Uni Recharge Box</title>
+  <meta name="description" content="Learn how URB supports student mental wellbeing with monthly self-care boxes and a digital mindfulness hub." />
+  <link rel="stylesheet" href="style.css" />
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <div class="clouds"></div>
+  <div class="clouds c2"></div>
+
+  <header>
+    <nav>
+      <div class="nav-left">
+        <img src="assets/urb_logo.svg" class="logo" alt="URB logo" />
+        <a href="index.html">Home</a>
+        <a href="what.html" class="active">What we do</a>
+        <a href="subs.html">Subscriptions</a>
+        <a href="hub.html">Wellness hub</a>
+      </div>
+      <div class="nav-right">
+        <a href="login.html">Login</a>
+        <a href="signup.html" class="btn btn-outline">Get started</a>
+        <button class="btn-ghost" type="button" onclick="toggleTheme()">🌓 Theme</button>
+      </div>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <p class="kicker">What is URB?</p>
+      <h1 class="h1">A monthly reset ritual for students.</h1>
+      <p class="p">
+        URB (Uni Recharge Box) is a calm‑first subscription created to support everyday student wellbeing.
+        Each month, subscribers receive a curated self‑care box alongside instant access to digital mindfulness tools.
+      </p>
+      <div class="grid-3">
+        <div class="card-soft">
+          <h3>📦 The physical box</h3>
+          <p class="p">
+            Tangible items — scented candles, teas, prompts and small gifts — chosen to gently activate the senses and signal rest.
+          </p>
+        </div>
+        <div class="card-soft">
+          <h3>🧘 Digital mindfulness hub</h3>
+          <p class="p">
+            A members‑only space with breathing exercises, soundscapes and micro‑rituals you can use between lectures or before bed.
+          </p>
+        </div>
+        <div class="card-soft">
+          <h3>🎓 Built for real uni life</h3>
+          <p class="p">
+            Everything is designed to be realistic around deadlines and part‑time work — no perfection or pressure.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Our values</h2>
+      <div class="grid-2">
+        <div>
+          <ul class="list-clean">
+            <li><strong>Calm over hustle.</strong> We encourage pacing yourself, not glamorising burnout.</li>
+            <li><strong>Small, consistent actions.</strong> Five minutes of breathing can be more realistic than an hour of yoga.</li>
+            <li><strong>Student‑led insight.</strong> URB is shaped by what students say they actually need during term time.</li>
+          </ul>
+        </div>
+        <div>
+          <ul class="list-clean">
+            <li><strong>Accessible routines.</strong> Clear, simple guidance so you can start a new ritual in seconds.</li>
+            <li><strong>Kind design.</strong> Colours, wording and navigation are chosen to reduce stress, not add it.</li>
+            <li><strong>Ethical calm.</strong> No dark patterns, no hidden fees — just transparent, opt‑in support.</li>
+          </ul>
+        </div>
+      </div>
+      <div style="margin-top:18px;">
+        <a href="subs.html" class="btn">Explore plans</a>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+      <span>© URB – Uni Recharge Box</span>
+      <div class="footer-links">
+        <a href="index.html">Home</a>
+        <a href="subs.html">Plans</a>
+        <a href="#">Privacy & cookies (demo)</a>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
