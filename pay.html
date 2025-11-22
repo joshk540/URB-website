@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Payment (Prototype) | URB – Uni Recharge Box</title>
+  <meta name="description" content="Prototype payment step for the URB Uni Recharge Box – no real card processing." />
+  <link rel="stylesheet" href="style.css" />
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <div class="clouds"></div>
+  <div class="clouds c2"></div>
+
+  <header>
+    <nav>
+      <div class="nav-left">
+        <img src="assets/urb_logo.svg" class="logo" alt="URB logo" />
+        <a href="index.html">Home</a>
+        <a href="what.html">What we do</a>
+        <a href="subs.html">Subscriptions</a>
+        <a href="hub.html">Wellness hub</a>
+      </div>
+      <div class="nav-right">
+        <a href="login.html">Login</a>
+        <button class="btn-ghost" type="button" onclick="toggleTheme()">🌓 Theme</button>
+      </div>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <p class="kicker">Step 2 of 2</p>
+      <h1 class="h1">Payment (prototype only).</h1>
+      <p class="p">
+        This page is designed to look and feel like a real checkout screen, but it does not process live payments.
+        Any details you enter will stay in your browser only for the purposes of this demo.
+      </p>
+
+      <form onsubmit="doPay(); return false;">
+        <label for="card">Card number</label>
+        <input id="card" placeholder="1234 5678 9012 3456" />
+
+        <div class="field-row">
+          <div style="flex:1 1 120px;">
+            <label for="exp">Expiry</label>
+            <input id="exp" placeholder="MM/YY" />
+          </div>
+          <div style="flex:1 1 120px;">
+            <label for="cvc">CVC</label>
+            <input id="cvc" placeholder="CVC" />
+          </div>
+        </div>
+
+        <div class="checkbox-row">
+          <input id="tos" type="checkbox" checked />
+          <label for="tos">
+            I understand this is not a real payment and that this website is a coursework prototype only.
+          </label>
+        </div>
+
+        <div style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:12px;">
+          <a href="signup.html" class="btn btn-outline">Back</a>
+          <button class="btn" type="submit">Complete sign‑up</button>
+        </div>
+      </form>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+      <span>© URB – Uni Recharge Box</span>
+      <div class="footer-links">
+        <a href="subs.html">Plans</a>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Login | URB – Uni Recharge Box</title>
+  <meta name="description" content="Log in to URB to access your student Wellness Hub and manage your subscription." />
+  <link rel="stylesheet" href="style.css" />
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <div class="clouds"></div>
+  <div class="clouds c2"></div>
+
+  <header>
+    <nav>
+      <div class="nav-left">
+        <img src="assets/urb_logo.svg" class="logo" alt="URB logo" />
+        <a href="index.html">Home</a>
+        <a href="what.html">What we do</a>
+        <a href="subs.html">Subscriptions</a>
+        <a href="hub.html">Wellness hub</a>
+      </div>
+      <div class="nav-right">
+        <a href="signup.html">Create account</a>
+        <button class="btn-ghost" type="button" onclick="toggleTheme()">🌓 Theme</button>
+      </div>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <p class="kicker">Welcome back</p>
+      <h1 class="h1">Log in to your URB space.</h1>
+      <p class="p">
+        Use the same email and password you used when you created your demo account. This prototype uses your browser’s local storage
+        to simulate a real login.
+      </p>
+
+      <form onsubmit="doLogin(); return false;">
+        <label for="le">Email</label>
+        <input id="le" type="email" placeholder="name@university.ac.uk" required />
+
+        <label for="lp">Password</label>
+        <input id="lp" type="password" placeholder="Password" required />
+
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;margin-bottom:10px;">
+          <span class="helper">Demo only – no real accounts are created.</span>
+        </div>
+
+        <button class="btn" type="submit">Log in</button>
+      </form>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+      <span>© URB – Uni Recharge Box</span>
+      <div class="footer-links">
+        <a href="subs.html">Plans</a>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
