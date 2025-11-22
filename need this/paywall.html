@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Access required | URB – Wellness Hub</title>
+  <meta name="description" content="You need an active URB membership to access the Wellness Hub. View plans or log in to continue." />
+  <link rel="stylesheet" href="style.css" />
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <div class="clouds"></div>
+  <div class="clouds c2"></div>
+
+  <header>
+    <nav>
+      <div class="nav-left">
+        <img src="assets/urb_logo.svg" class="logo" alt="URB logo" />
+        <a href="index.html">Home</a>
+        <a href="what.html">What we do</a>
+        <a href="subs.html">Subscriptions</a>
+        <a href="hub.html" class="active">Wellness hub</a>
+      </div>
+      <div class="nav-right">
+        <a href="login.html">Login</a>
+        <button class="btn-ghost" type="button" onclick="toggleTheme()">🌓 Theme</button>
+      </div>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="card" style="text-align:center;">
+      <p class="kicker">Members only</p>
+      <h1 class="h1">You’ll need a membership to enter.</h1>
+      <p class="p">
+        The Wellness Hub is designed as a members‑only calm space. To access breathing tools, soundscapes and rituals,
+        you’ll need an active URB subscription.
+      </p>
+      <div style="display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin-top:10px;">
+        <a class="btn" href="subs.html">View plans</a>
+        <a class="btn btn-outline" href="login.html">Log in to existing account</a>
+      </div>
+      <p class="p" style="margin-top:14px;font-size:0.9rem;">
+        Prototype note: this access step is simulated using local storage in your browser for coursework.
+      </p>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+      <span>© URB – Uni Recharge Box</span>
+      <div class="footer-links">
+        <a href="subs.html">Plans</a>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

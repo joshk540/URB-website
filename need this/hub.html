@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Wellness Hub | URB – Members Area</title>
+  <meta name="description" content="Members-only Wellness Hub with soundscapes, guided breathing, mood check-ins and simple student-friendly rituals." />
+  <link rel="stylesheet" href="style.css" />
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <div class="clouds"></div>
+  <div class="clouds c2"></div>
+
+  <header>
+    <nav>
+      <div class="nav-left">
+        <img src="assets/urb_logo.svg" class="logo" alt="URB logo" />
+        <a href="index.html">Home</a>
+        <a href="what.html">What we do</a>
+        <a href="subs.html">Subscriptions</a>
+        <a href="hub.html" class="active">Wellness hub</a>
+      </div>
+      <div class="nav-right">
+        <a href="login.html" onclick="logout(); return false;">Logout</a>
+        <button class="btn-ghost" type="button" onclick="toggleTheme()">🌓 Theme</button>
+      </div>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <div class="hub-grid">
+        <div>
+          <p class="kicker">Members area</p>
+          <h1 class="h1">Welcome to your Wellness Hub.</h1>
+          <p class="p">
+            This space is only available to active URB members. Use it for short, realistic check-ins – the kind you
+            can actually fit between lectures, shifts and revision.
+          </p>
+
+          <div class="resource-card">
+            <span class="resource-tag">🎧 Soundscapes</span>
+            <h3>Choose your background</h3>
+            <p class="p">Pick a soundscape that matches your current mood or study style. Your last choice is remembered on this device.</p>
+            <select id="sndSelect" style="margin:6px 0 8px;">
+              <option value="">Select a soundscape…</option>
+              <option value="https://cdn.pixabay.com/download/audio/2022/03/10/audio_aea5f4a674.mp3?filename=soft-piano-ambient-141992.mp3">
+                Soft piano focus
+              </option>
+              <option value="https://cdn.pixabay.com/download/audio/2021/09/01/audio_125b1cf03a.mp3?filename=meditation-ambient-138050.mp3">
+                Gentle meditation
+              </option>
+              <option value="https://cdn.pixabay.com/download/audio/2022/07/25/audio_eca8ba07f3.mp3?filename=forest-birds-ambient-nature-114353.mp3">
+                Forest & birds
+              </option>
+              <option value="https://cdn.pixabay.com/download/audio/2022/03/15/audio_8864fead5b.mp3?filename=coffee-shop-ambience-ambient-music-139386.mp3">
+                Calm coffee shop
+              </option>
+            </select>
+            <audio id="snd" controls loop style="width:100%;"></audio>
+          </div>
+
+          <div class="resource-card">
+            <span class="resource-tag">🫁 Breathing</span>
+            <h3>60-second reset</h3>
+            <p class="p">
+              Follow the expanding circle – breathe in as it grows, hold for a moment, then breathe out as it shrinks.
+              Repeat for 5–8 breaths.
+            </p>
+            <div class="breath"></div>
+            <p class="p" style="text-align:center;">Inhale… hold… exhale…</p>
+          </div>
+        </div>
+
+        <div>
+          <div class="resource-card">
+            <span class="resource-tag">🙂 Mood check-in</span>
+            <h3>How are you arriving today?</h3>
+            <p class="p">Click the option that feels closest. This doesn’t have to be exact – it’s just a quick check-in.</p>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 10px;">
+              <button class="btn btn-outline" data-mood="calm">Calm</button>
+              <button class="btn btn-outline" data-mood="stressed">Stressed</button>
+              <button class="btn btn-outline" data-mood="tired">Tired</button>
+              <button class="btn btn-outline" data-mood="overwhelmed">Overwhelmed</button>
+            </div>
+            <p id="moodMessage" class="p"></p>
+          </div>
+
+          <div class="resource-card">
+            <span class="resource-tag">📝 Micro-journal</span>
+            <h3>Two-minute journalling space</h3>
+            <p class="p">
+              Use this box for quick notes – a win from today, something on your mind, or one thing you’re grateful for.
+              It automatically saves in this browser only.
+            </p>
+            <textarea id="journal" placeholder="Type a few lines here – it doesn’t need to be perfect."></textarea>
+            <p class="helper">Saved locally in this browser so you can come back to it later.</p>
+          </div>
+
+          <div class="resource-card">
+            <span class="resource-tag">🌅 Study-friendly routines</span>
+            <h3>Suggested weekly check-ins</h3>
+            <p class="p">
+              <strong>Monday:</strong> 3-minute breath before your first lecture.<br />
+              <strong>Wednesday:</strong> Tea + soundscape while planning your week.<br />
+              <strong>Friday:</strong> Short journal entry about one thing that went well.<br />
+              <strong>Sunday:</strong> Candle, journal prompt and gentle reset for the week ahead.
+            </p>
+          </div>
+
+          <div class="resource-card">
+            <span class="resource-tag">⚠ Prototype note</span>
+            <h3>Demo only</h3>
+            <p class="p">
+              This Hub is a prototype for coursework. In a live version, additional playlists, guided videos and personalised
+              check-ins would be available here based on your preferences.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+      <span>© URB – Uni Recharge Box</span>
+      <div class="footer-links">
+        <a href="index.html">Home</a>
+        <a href="subs.html">Plans</a>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
