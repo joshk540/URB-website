@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Subscriptions | URB – Uni Recharge Box</title>
+  <meta name="description" content="Choose the URB plan that fits your budget and routine – from full mindfulness boxes to digital-only access." />
+  <link rel="stylesheet" href="style.css" />
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <div class="clouds"></div>
+  <div class="clouds c2"></div>
+
+  <header>
+    <nav>
+      <div class="nav-left">
+        <img src="assets/urb_logo.svg" class="logo" alt="URB logo" />
+        <a href="index.html">Home</a>
+        <a href="what.html">What we do</a>
+        <a href="subs.html" class="active">Subscriptions</a>
+        <a href="hub.html">Wellness hub</a>
+      </div>
+      <div class="nav-right">
+        <a href="login.html">Login</a>
+        <a href="signup.html" class="btn btn-outline">Get started</a>
+        <button class="btn-ghost" type="button" onclick="toggleTheme()">🌓 Theme</button>
+      </div>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <p class="kicker">Plans</p>
+      <h1 class="h1">Pick a plan that feels realistic.</h1>
+      <p class="p">
+        All plans are flexible. You can pause or cancel anytime. Pricing is designed with a student budget in mind,
+        and every option includes access to our digital Wellness Hub.
+      </p>
+    </section>
+
+    <section class="pricing-grid">
+      <article class="plan">
+        <div class="plan-header">
+          <h2>Full Recharge Box</h2>
+          <span class="plan-tag">Most popular</span>
+        </div>
+        <div class="plan-price">£17.99 <span>/ month</span></div>
+        <ul>
+          <li>Monthly self‑care box delivered to your door</li>
+          <li>Curated candles, teas, prompts & surprise items</li>
+          <li>Full access to the digital Wellness Hub</li>
+          <li>Priority early access to new rituals and content</li>
+        </ul>
+        <button class="btn" onclick="location.href='signup.html'">Choose Full Recharge</button>
+      </article>
+
+      <article class="plan">
+        <div class="plan-header">
+          <h2>Digital Only</h2>
+          <span class="plan-tag">Calm on a budget</span>
+        </div>
+        <div class="plan-price">£4.99 <span>/ month</span></div>
+        <ul>
+          <li>Unlimited access to soundscapes & breathing tools</li>
+          <li>Weekly digital prompts & reflection questions</li>
+          <li>New micro‑rituals added during term time</li>
+          <li>Upgrade to a box plan anytime</li>
+        </ul>
+        <button class="btn btn-outline" onclick="location.href='signup.html'">Choose Digital Only</button>
+      </article>
+
+      <article class="plan">
+        <div class="plan-header">
+          <h2>One‑Time Box</h2>
+          <span class="plan-tag">Gift or trial</span>
+        </div>
+        <div class="plan-price">£19.99 <span>one‑off</span></div>
+        <ul>
+          <li>Single curated self‑care box</li>
+          <li>Perfect as a gift or exam‑season treat</li>
+          <li>30‑day complimentary access to the Hub</li>
+          <li>No ongoing commitment</li>
+        </ul>
+        <button class="btn btn-outline" onclick="location.href='signup.html'">Choose One‑Time Box</button>
+      </article>
+    </section>
+
+    <section class="card">
+      <h2>Questions students often ask</h2>
+      <div class="grid-2">
+        <div>
+          <h3>Can I pause my subscription?</h3>
+          <p class="p">Yes. You can pause for a month during holidays or busy exam periods, then restart whenever you're ready.</p>
+          <h3>Is this a real payment system?</h3>
+          <p class="p">For this prototype site, payment is simulated and no real card details are processed.</p>
+        </div>
+        <div>
+          <h3>What if I have allergies?</h3>
+          <p class="p">In a live version, you’d be able to set preferences (for example, “no nuts” or “no fragrance”).</p>
+          <h3>Do I need all the extras?</h3>
+          <p class="p">Not at all — even a 5‑minute breathing break can be enough. URB simply makes that easier to remember.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+      <span>© URB – Uni Recharge Box</span>
+      <div class="footer-links">
+        <a href="what.html">About URB</a>
+        <a href="#">Privacy & cookies (demo)</a>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
